@@ -12,7 +12,7 @@ Dispone de tres directorios:
 + Codigos (para albergar los códigos creados a partir de los ejercicios)
 + Datos (para albergar los datos y/o resultados)
 
-#Reto 8 El Gömböc
+# Reto 8 El Gömböc
 
 El Gömböc es un objeto tridimensional, convexo y homogéneo que tiene un punto de equilibrio estable y otro inestable. Cuando se coloca sobre una superficie plana, independientemente de cómo se coloque el Gömböc, siempre volverá a su punto de equilibrio estable, de forma similar a un juguete que se endereza solo. A diferencia de estos juguetes, que dependen de una base lastrada, la capacidad de autoenderezamiento del Gömböc se debe exclusivamente a su forma geométrica específica.
 
