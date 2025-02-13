@@ -1,8 +1,8 @@
 # TareasCursos
 
-- Michel Calderon 2210710
-- Andrea Uribe 
-- David García 2220664
+Michel Calderon 2210710
+Andrea Uribe 
+David García 2220664
 
 Este repostorio debe clonarse para reportar las tareas y asignaciones
 Dispone de tres directorios: 
