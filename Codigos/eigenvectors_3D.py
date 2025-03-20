@@ -11,9 +11,6 @@ volume = mesh.volume
 centroid = mesh.center_mass
 inertia_tensor = mesh.moment_inertia  # Si deseas considerar densidad, multiplica por la densidad
 
-print("Volumen:", volume)
-print("Centro de masa:", centroid)
-
 # Suponiendo que 'inertia_tensor' es tu tensor de inercia 3x3:
 eigvals, eigvecs = np.linalg.eigh(inertia_tensor)
 
