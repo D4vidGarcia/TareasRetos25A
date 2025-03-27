@@ -1,6 +1,6 @@
 # TareasCursos
 
-Michel Calderon 2210710
+~~Michel Calderon 2210710~~
 
 Andrea Uribe 
 
