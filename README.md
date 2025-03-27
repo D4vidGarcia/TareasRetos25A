@@ -1,6 +1,6 @@
 # TareasCursos
 
-Andrea Uribe 
+Paula Uribe 
 
 David García 2220664
 
