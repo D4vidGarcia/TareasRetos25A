@@ -1,7 +1,5 @@
 # TareasCursos
 
-~~Michel Calderon 2210710~~
-
 Andrea Uribe 
 
 David García 2220664
