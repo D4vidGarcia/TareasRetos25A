@@ -3,7 +3,7 @@ import trimesh
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
-stl = int(3)  # Seleccionar el archivo STL a usar
+stl = int(1)  # Seleccionar el archivo STL a usar
 
 # Diccionario con las rutas de los archivos STL
 stl_paths = {
