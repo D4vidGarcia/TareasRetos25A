@@ -19,28 +19,26 @@ stl_paths = {
 # Usar el archivo correspondiente dependiendo de prueba
 mesh = trimesh.load_mesh(stl_paths[stl])
 
-# Calcular el volumen, centro de masa y el tensor de inercia
-volume = mesh.volume
+# Calcular el centro de masa y el tensor de inercia
 centroid = mesh.center_mass
-inertia_tensor_origin = mesh.moment_inertia  # Si se desea considerar la densidad, se multiplica por la densidad
+# (Opcional) avisar si la malla no es hermética
+if not mesh.is_watertight:
+    print("⚠️ Atención: la malla no es hermética — los resultados pueden no ser fiables.")
 
-# Asumimos densidad uniforme, entonces la masa es proporcional al volumen (usaremos volumen como masa)
-mass = volume  # Se multiplica por la densidad
+# 1) Tensor de inercia con respecto al CM, alineado en ejes globales
+I_cm = mesh.moment_inertia
+# 📖 mesh.moment_inertia ya está centrado en el centro de masa y alineado con ejes cartesianos :contentReference[oaicite:0]{index=0}
 
-# Vector de traslación del centro de masa
-d = centroid.reshape(3, 1)  # Convertir a columna para cálculo
+# 2) Momentos principales de inercia (vector diagonal)
+principal_moments = mesh.principal_inertia_components
+# 📖 moment principal order corresponde a mesh.principal_inertia_vectors :contentReference[oaicite:1]{index=1}
 
-# Matriz identidad 3x3
-I_identity = np.eye(3)
+# 3) Ejes principales de rotación (vectores propios)
+principal_axes = mesh.principal_inertia_vectors
+# 📖 devuelve tres vectores unitarios ordenados según principal_inertia_components :contentReference[oaicite:2]{index=2}
 
-# Producto exterior de d (d * d^T)
-d_outer = np.dot(d, d.T)
-
-# Aplicar el teorema de Steiner
-inertia_tensor_cm = inertia_tensor_origin + mass * (np.trace(d_outer) * I_identity - d_outer)
-
-# Suponiendo que 'inertia_tensor' es tu tensor de inercia 3x3:
-eigvals, eigvecs = np.linalg.eigh(inertia_tensor_cm)
+# Verificación rápida: principal_axes^T · I_cm · principal_axes debe ser diagonal
+I_diag_check = principal_axes.T @ I_cm @ principal_axes
 
 # Rotación y preparación de malla
 rotation_matrix = np.array([[-1, 0, 0],
@@ -48,7 +46,7 @@ rotation_matrix = np.array([[-1, 0, 0],
                             [ 0, 1, 0]])
 
 # Rotar vértices
-rotated_vertices = (rotation_matrix.T @ (mesh.vertices - centroid).T).T
+rotated_vertices = (mesh.vertices - centroid) @ rotation_matrix
 
 # Obtener los vértices y caras de la malla
 vertices = mesh.vertices

@@ -19,28 +19,32 @@ stl_paths = {
 # Usar el archivo correspondiente dependiendo de prueba
 mesh = trimesh.load_mesh(stl_paths[stl])
 
-# Calcular el volumen, centro de masa y el tensor de inercia
-volume = mesh.volume
+# Calcular el centro de masa y el tensor de inercia
 centroid = mesh.center_mass
-inertia_tensor_origin = mesh.moment_inertia  # Si se desea considerar la densidad, se multiplica por la densidad
+# (Opcional) avisar si la malla no es hermética
+if not mesh.is_watertight:
+    print("⚠️ Atención: la malla no es hermética — los resultados pueden no ser fiables.")
 
-# Asumimos densidad uniforme, entonces la masa es proporcional al volumen (usaremos volumen como masa)
-mass = volume  # Se multiplica por la densidad
+# 1) Tensor de inercia con respecto al CM, alineado en ejes globales
+I_cm = mesh.moment_inertia
+# 📖 mesh.moment_inertia ya está centrado en el centro de masa y alineado con ejes cartesianos :contentReference[oaicite:0]{index=0}
 
-# Vector de traslación del centro de masa
-d = centroid.reshape(3, 1)  # Convertir a columna para cálculo
+# 2) Momentos principales de inercia (vector diagonal)
+principal_moments = mesh.principal_inertia_components
+# 📖 moment principal order corresponde a mesh.principal_inertia_vectors :contentReference[oaicite:1]{index=1}
 
-# Matriz identidad 3x3
-I_identity = np.eye(3)
+# 3) Ejes principales de rotación (vectores propios)
+principal_axes = mesh.principal_inertia_vectors
+# 📖 devuelve tres vectores unitarios ordenados según principal_inertia_components :contentReference[oaicite:2]{index=2}
 
-# Producto exterior de d (d * d^T)
-d_outer = np.dot(d, d.T)
+# Resultados
+print("Tensor de inercia (centro de masa, no desplazado):\n", I_cm)
+print("Momentos principales de inercia:", principal_moments)
+print("Ejes principales (columnas):\n", principal_axes)
 
-# Aplicar el teorema de Steiner
-inertia_tensor_cm = inertia_tensor_origin + mass * (np.trace(d_outer) * I_identity - d_outer)
-
-# Suponiendo que 'inertia_tensor' es tu tensor de inercia 3x3:
-eigvals, eigvecs = np.linalg.eigh(inertia_tensor_cm)
+# Verificación rápida: principal_axes^T · I_cm · principal_axes debe ser diagonal
+I_diag_check = principal_axes.T @ I_cm @ principal_axes
+print("I_alineado con ejes principales (debe ser diagonal):\n", I_diag_check)
 
 # Rotación y preparación de malla
 rotation_matrix = np.array([[-1, 0, 0],
@@ -48,7 +52,7 @@ rotation_matrix = np.array([[-1, 0, 0],
                             [ 0, 1, 0]])
 
 # Rotar vértices
-rotated_vertices = (rotation_matrix.T @ (mesh.vertices - centroid).T).T
+rotated_vertices = (mesh.vertices - centroid) @ rotation_matrix
 
 # Crear malla en formato PyVista
 faces_pv = np.hstack([[3] + list(face) for face in mesh.faces])  # Cada cara con 3 vértices
@@ -61,7 +65,7 @@ plotter = pv.Plotter()
 plotter.add_mesh(pv_mesh, color='lightgray', show_edges=True, opacity=0.6)
 
 # Rotar vectores propios
-rotated_eigvecs = (rotation_matrix.T @ eigvecs.T).T
+rotated_eigvecs = principal_axes @ rotation_matrix
 
 # Dibujar flechas para los ejes de la matriz identidad
 colors_identity = ['magenta', 'orange', 'cyan']
@@ -83,9 +87,9 @@ plotter.add_text("Malla rotada en punto de equilibrio", position='upper_edge', f
 # Mostrar leyenda en parte inferior derecha
 plotter.add_legend(
     labels=[
-        ("Eje 1 (Identidad)", "magenta"),
-        ("Eje 2 (Identidad)", "orange"),
-        ("Eje 3 (Identidad)", "cyan"),
+        ("Eje 1", "magenta"),
+        ("Eje 2", "orange"),
+        ("Eje 3", "cyan"),
     ],
     bcolor='white',
     border=True,
@@ -95,3 +99,6 @@ plotter.add_legend(
 
 # Mostrar visualización
 plotter.show()
+
+# Mostrar vectores rotados por consola
+print("vectores propios rotados:\n", rotated_eigvecs)
